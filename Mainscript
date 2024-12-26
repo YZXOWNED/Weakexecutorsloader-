@@ -1,1 +1,83 @@
 
+-- Configuration
+local HWID = game:GetService("RbxAnalyticsService"):GetClientId()
+
+-- List of Whitelisted HWIDs
+local WhitelistedHWIDs = {
+    ["41D9CEC1-2927-43F1-94FA-E90F7040AF6F"] = true,
+    ["7C2E35CA-1331-4E9A-B703-B16CD980774E"] = true,
+    ["46CA64B2-6DE6-4094-82F1-0E5A6A295D2F"] = true,
+    ["A618E2AD-3A39-4936-A39A-6DC3DB467937"] = true,
+    ["E7C4E451-9524-4FE0-A263-78C2A04BD4BA"] = true,
+    ["A7B88461-4243-471B-8A3A-22D525C49D4B"] = true,
+    ["1166B576-94B1-4AA1-8E12-897B9F22E20D"] = true,
+    ["9F5C3F84-4272-42DD-B004-BAE7C27FEC9E"] = true,  
+    ["20423517-9a34-49a1-8aac-ebf095e4976d"] = true,
+}
+
+-- Games that bypass the HWID whitelist
+local gamesWithoutWhitelist = {
+    [301549746] = true, -- Counter Blox
+    [4483381587] = true, -- Baseplate for testing
+}
+
+-- Game libraries map
+local gameLibraries = {}
+
+-- Function to easily add new games and libraries
+local function addGameLibrary(placeId, libraryUrl)
+    gameLibraries[placeId] = libraryUrl
+end
+
+-- Add new games and libraries here:
+addGameLibrary(301549746, "https://raw.githubusercontent.com/YZXOWNED/library.new/refs/heads/main/fixedcounterblox") -- Counter Blox
+addGameLibrary(4483381587, "https://raw.githubusercontent.com/YZXOWNED/library.new/refs/heads/main/fixedcounterblox") -- Baseplate for testing
+addGameLibrary(286090429, "https://raw.githubusercontent.com/YZXOWNED/bestarsenalscriptfuckthaskidders/refs/heads/main/v3.1") -- Arsenal
+addGameLibrary(1869597719, "https://raw.githubusercontent.com/YZXOWNED/library.new/refs/heads/main/fixedcounterblox") -- Counter Blox Deathmatch
+addGameLibrary(13253735473, "https://raw.githubusercontent.com/YZXOWNED/library.new/refs/heads/main/Wave%20test") -- Wave Test
+
+-- Function to check if HWID is whitelisted
+local function CheckHWID(hwid)
+    return WhitelistedHWIDs[hwid] or false
+end
+
+-- Function to load the script for the game
+local function loadLibraryForGame()
+    local currentPlaceId = game.PlaceId
+    local libraryUrl = gameLibraries[currentPlaceId]
+    
+    if libraryUrl then
+        local success, library = pcall(function()
+            return loadstring(game:HttpGet(libraryUrl))()
+        end)
+
+        if success then
+            print("Script Loaded")
+        else
+            warn("Failed to load the Script (Execute the script again) " .. currentPlaceId)
+        end
+    else
+        warn("Failed to load the Script (No script or not added game ID)")
+    end
+end
+
+-- Determine if whitelist is required for the current game
+local currentPlaceId = game.PlaceId
+local isWhitelisted = gamesWithoutWhitelist[currentPlaceId] or CheckHWID(HWID)
+
+-- Execute script based on whitelist status
+if isWhitelisted then
+    loadLibraryForGame()
+    print("Script Loaded")
+else
+    local player = game.Players.LocalPlayer
+
+    -- Function to kick the player
+    local function kickYourself()
+        -- Kick the player with a message
+        player:Kick("Your HWID is not Whitelisted")
+    end
+
+    -- Call the function to kick yourself
+    kickYourself()
+end
